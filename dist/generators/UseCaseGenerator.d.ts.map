@@ -1,1 +1,0 @@
-{"version":3,"file":"UseCaseGenerator.d.ts","sourceRoot":"","sources":["../../src/generators/UseCaseGenerator.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,KAAK,gBAAgB,EAAE,MAAM,oBAAoB,CAAA;AAEzE,qBAAa,gBAAiB,SAAQ,aAAa;IAC3C,QAAQ,CAAC,OAAO,EAAE,gBAAgB,GAAG,OAAO,CAAC,IAAI,CAAC;CAkBzD"}

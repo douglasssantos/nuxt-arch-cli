@@ -1,1 +1,0 @@
-{"version":3,"file":"RepositoryGenerator.d.ts","sourceRoot":"","sources":["../../src/generators/RepositoryGenerator.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,KAAK,gBAAgB,EAAE,MAAM,oBAAoB,CAAA;AAEzE,qBAAa,mBAAoB,SAAQ,aAAa;IAC9C,QAAQ,CAAC,OAAO,EAAE,gBAAgB,GAAG,OAAO,CAAC,IAAI,CAAC;CA8CzD"}

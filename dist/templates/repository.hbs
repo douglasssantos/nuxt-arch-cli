@@ -1,8 +1,0 @@
-import type { {{pascalName}} } from '../entities/{{pascalName}}'
-
-export interface I{{pascalName}}Repository {
-  findById(id: string | number): Promise<{{pascalName}} | null>
-  findAll(): Promise<{{pascalName}}[]>
-  save(entity: {{pascalName}}): Promise<{{pascalName}}>
-  delete(id: string | number): Promise<void>
-}

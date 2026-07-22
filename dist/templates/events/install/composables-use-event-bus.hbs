@@ -1,9 +1,0 @@
-import type { IEventBus } from '../contracts/IEventBus'
-
-/**
- * useEventBus — acesso ao barramento de eventos via Nuxt plugin.
- */
-export const useEventBus = (): IEventBus => {
-  const nuxtApp = useNuxtApp()
-  return nuxtApp.$eventBus as IEventBus
-}

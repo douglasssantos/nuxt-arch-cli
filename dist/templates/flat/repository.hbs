@@ -1,9 +1,0 @@
-import type { {{pascalName}} } from '../models/{{pascalName}}'
-
-export interface I{{pascalName}}Repository {
-  findById(id: string | number): {{pascalName}} | null
-  findAll(): {{pascalName}}[]
-  save(entity: Partial<{{pascalName}}>): {{pascalName}}
-  saveMany(entities: Partial<{{pascalName}}>[]): {{pascalName}}[]
-  delete(id: string | number): void
-}

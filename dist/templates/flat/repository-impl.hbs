@@ -1,0 +1,15 @@
+import { useRepo } from 'pinia-orm'
+import type { I{{pascalName}}Repository } from './I{{pascalName}}Repository'
+import { {{pascalName}} } from '../models/{{pascalName}}'
+
+export const use{{pascalName}}Repository = (): I{{pascalName}}Repository => {
+  const repo = useRepo({{pascalName}})
+
+  return {
+    findById: (id) => repo.find(id) as {{pascalName}} | null,
+    findAll: () => repo.all() as {{pascalName}}[],
+    save: (entity) => repo.save(entity) as {{pascalName}},
+    saveMany: (entities) => repo.save(entities as {{pascalName}}[]) as {{pascalName}}[],
+    delete: (id) => { repo.destroy(id) },
+  }
+}

@@ -1,0 +1,1 @@
+{"version":3,"file":"ModelGenerator.d.ts","sourceRoot":"","sources":["../../src/generators/ModelGenerator.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,KAAK,gBAAgB,EAAE,MAAM,oBAAoB,CAAA;AAEzE,qBAAa,cAAe,SAAQ,aAAa;IACzC,QAAQ,CAAC,OAAO,EAAE,gBAAgB,GAAG,OAAO,CAAC,IAAI,CAAC;CAczD"}

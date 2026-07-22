@@ -1,0 +1,1 @@
+{"version":3,"file":"NuxtConfigService.d.ts","sourceRoot":"","sources":["../../src/services/NuxtConfigService.ts"],"names":[],"mappings":"AAIA,qBAAa,iBAAiB;IAC5B;;;;OAIG;IACG,QAAQ,CAAC,cAAc,EAAE,MAAM,EAAE,SAAS,EAAE,MAAM,GAAG,OAAO,CAAC,OAAO,CAAC;IA2E3E;;OAEG;IACG,iBAAiB,CAAC,GAAG,EAAE,MAAM,GAAG,OAAO,CAAC,IAAI,GAAG,IAAI,CAAC;CAgB3D"}

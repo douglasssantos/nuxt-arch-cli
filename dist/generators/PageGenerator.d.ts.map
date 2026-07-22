@@ -1,0 +1,1 @@
+{"version":3,"file":"PageGenerator.d.ts","sourceRoot":"","sources":["../../src/generators/PageGenerator.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,KAAK,gBAAgB,EAAE,MAAM,oBAAoB,CAAA;AAEzE,qBAAa,aAAc,SAAQ,aAAa;IACxC,QAAQ,CAAC,OAAO,EAAE,gBAAgB,GAAG,OAAO,CAAC,IAAI,CAAC;CAYzD"}

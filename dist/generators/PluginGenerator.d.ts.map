@@ -1,0 +1,1 @@
+{"version":3,"file":"PluginGenerator.d.ts","sourceRoot":"","sources":["../../src/generators/PluginGenerator.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,KAAK,gBAAgB,EAAE,MAAM,oBAAoB,CAAA;AAEzE,qBAAa,eAAgB,SAAQ,aAAa;IAC1C,QAAQ,CAAC,OAAO,EAAE,gBAAgB,GAAG,OAAO,CAAC,IAAI,CAAC;CAOzD"}

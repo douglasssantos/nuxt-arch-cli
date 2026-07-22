@@ -1,0 +1,15 @@
+import type { IEventHandler } from '~/core/events/contracts/IEventHandler'
+import type { {{eventPascal}}Payload } from '../../domain/contracts/{{eventPascal}}'
+
+/**
+ * {{pascalName}} Listener — Layer: {{layer}}
+ * Handles: {{eventKey}}
+ *
+ * @generated Nuxt Architect CLI
+ */
+export class {{pascalName}} implements IEventHandler<{{eventPascal}}Payload> {
+  async handle(payload: {{eventPascal}}Payload): Promise<void> {
+    // TODO: implement listener logic
+    void payload
+  }
+}

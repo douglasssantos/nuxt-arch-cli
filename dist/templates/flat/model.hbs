@@ -1,0 +1,17 @@
+import { Model, Attr } from 'pinia-orm'
+
+export class {{pascalName}} extends Model {
+  static entity = '{{camelName}}'
+
+  static fields() {
+    return {
+      id: this.attr(null),
+      createdAt: this.attr(null),
+      updatedAt: this.attr(null),
+    }
+  }
+
+  declare id: string | number | null
+  declare createdAt: string | null
+  declare updatedAt: string | null
+}

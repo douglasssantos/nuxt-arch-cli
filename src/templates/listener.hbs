@@ -1,0 +1,12 @@
+import type { I{{pascalName}}Event } from '../events/{{pascalName}}Event'
+
+export interface I{{pascalName}}Listener {
+  handle(event: I{{pascalName}}Event): Promise<void>
+}
+
+export class {{pascalName}}Listener implements I{{pascalName}}Listener {
+  async handle(event: I{{pascalName}}Event): Promise<void> {
+    // TODO: implement listener logic
+    console.log(`[{{pascalName}}Listener] Event received:`, event)
+  }
+}

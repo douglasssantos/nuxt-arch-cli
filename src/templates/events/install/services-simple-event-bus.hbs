@@ -1,0 +1,42 @@
+import type { IEventBus, EventHandler } from '../contracts/IEventBus'
+
+/**
+ * SimpleEventBus — implementação in-memory do barramento de eventos.
+ * Sem dependências externas. Pronto para SSR (Nuxt).
+ */
+export class SimpleEventBus implements IEventBus {
+  private readonly handlers = new Map<string, Set<EventHandler>>()
+
+  async emit<K extends string>(event: K, payload: unknown): Promise<void> {
+    const set = this.handlers.get(event)
+    if (!set || set.size === 0) return
+    await Promise.all([...set].map((handler) => handler(payload)))
+  }
+
+  on<K extends string>(event: K, handler: EventHandler): void {
+    if (!this.handlers.has(event)) {
+      this.handlers.set(event, new Set())
+    }
+    this.handlers.get(event)!.add(handler)
+  }
+
+  once<K extends string>(event: K, handler: EventHandler): void {
+    const wrapper: EventHandler = async (payload) => {
+      await handler(payload)
+      this.off(event, wrapper)
+    }
+    this.on(event, wrapper)
+  }
+
+  off<K extends string>(event: K, handler: EventHandler): void {
+    this.handlers.get(event)?.delete(handler)
+  }
+
+  clear(event?: string): void {
+    if (event) {
+      this.handlers.delete(event)
+    } else {
+      this.handlers.clear()
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"version":3,"file":"ConfigService.d.ts","sourceRoot":"","sources":["../../src/services/ConfigService.ts"],"names":[],"mappings":"AACA,OAAO,EAAiB,KAAK,SAAS,EAAE,MAAM,oBAAoB,CAAA;AAGlE,qBAAa,aAAa;IACxB,OAAO,CAAC,MAAM,CAAkC;IAChD,OAAO,CAAC,MAAM,CAAQ;IAEhB,IAAI,CAAC,GAAG,GAAE,MAAsB,GAAG,OAAO,CAAC,SAAS,CAAC;IAsB3D,GAAG,IAAI,SAAS;CAGjB"}

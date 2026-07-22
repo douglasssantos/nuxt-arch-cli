@@ -1,0 +1,74 @@
+import { $fetch, FetchError } from 'ofetch'
+import { {{pascalName}}Mapper, type {{pascalName}}ApiResponse } from '../mappers/{{pascalName}}Mapper'
+import type { {{pascalName}} } from '../models/{{pascalName}}'
+
+export class {{pascalName}}ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly statusCode?: number,
+    public readonly data?: unknown,
+  ) {
+    super(message)
+    this.name = '{{pascalName}}ApiError'
+  }
+}
+
+export class {{pascalName}}Api {
+  private readonly baseUrl = '/api/{{kebabName}}'
+
+  private handleError(error: unknown): never {
+    if (error instanceof FetchError) {
+      throw new {{pascalName}}ApiError(error.message, error.status, error.data)
+    }
+    throw new {{pascalName}}ApiError(String(error))
+  }
+
+  async findAll(): Promise<{{pascalName}}[]> {
+    try {
+      const response = await $fetch<{{pascalName}}ApiResponse[]>(this.baseUrl)
+      return {{pascalName}}Mapper.toModelList(response)
+    } catch (error) {
+      this.handleError(error)
+    }
+  }
+
+  async findById(id: string | number): Promise<{{pascalName}}> {
+    try {
+      const response = await $fetch<{{pascalName}}ApiResponse>(`${this.baseUrl}/${id}`)
+      return {{pascalName}}Mapper.toModel(response)
+    } catch (error) {
+      this.handleError(error)
+    }
+  }
+
+  async create(payload: Partial<{{pascalName}}>): Promise<{{pascalName}}> {
+    try {
+      const body = {{pascalName}}Mapper.toApi(payload)
+      const response = await $fetch<{{pascalName}}ApiResponse>(this.baseUrl, { method: 'POST', body })
+      return {{pascalName}}Mapper.toModel(response)
+    } catch (error) {
+      this.handleError(error)
+    }
+  }
+
+  async update(id: string | number, payload: Partial<{{pascalName}}>): Promise<{{pascalName}}> {
+    try {
+      const body = {{pascalName}}Mapper.toApi(payload)
+      const response = await $fetch<{{pascalName}}ApiResponse>(`${this.baseUrl}/${id}`, {
+        method: 'PUT',
+        body,
+      })
+      return {{pascalName}}Mapper.toModel(response)
+    } catch (error) {
+      this.handleError(error)
+    }
+  }
+
+  async remove(id: string | number): Promise<void> {
+    try {
+      await $fetch(`${this.baseUrl}/${id}`, { method: 'DELETE' })
+    } catch (error) {
+      this.handleError(error)
+    }
+  }
+}

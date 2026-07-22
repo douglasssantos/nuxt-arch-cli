@@ -1,11 +1,13 @@
 import type { ICommand } from './ICommand.js'
 import type { LayerGenerator } from '../generators/LayerGenerator.js'
 import type { LoggerService } from '../services/LoggerService.js'
+import type { LayerDirsConfig } from '../config/index.js'
 import { Validator } from '../utils/Validator.js'
 
 export interface MakeLayerCommandOptions {
   force?: boolean
   cwd?: string
+  layerDirs?: LayerDirsConfig
 }
 
 export class MakeLayerCommand implements ICommand {

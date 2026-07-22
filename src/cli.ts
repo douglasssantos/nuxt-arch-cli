@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import chalk from 'chalk'
 import { Container } from './config/Container.js'
 import { MakeLayerCommand } from './commands/MakeLayerCommand.js'
-import { MakeModuleCommand } from './commands/MakeModuleCommand.js'
+import { InitCommand } from './commands/InitCommand.js'
 import { MakeArtifactCommand } from './commands/MakeArtifactCommand.js'
 import { EventsInstallCommand } from './commands/events/EventsInstallCommand.js'
 import { EventsMakeCommand } from './commands/events/EventsMakeCommand.js'
@@ -23,55 +23,53 @@ const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as { version: string; des
 const cwd = process.cwd()
 const container = new Container(cwd)
 
+// Load user config eagerly so actions can use it synchronously via container.configService.get()
+container.configService.load(cwd).catch(() => {/* use defaults */})
+
 export const program = new Command()
   .name('app')
-  .description(chalk.cyan('Nuxt Architect CLI — Professional scaffolding for Nuxt 4 projects'))
+  .description(chalk.cyan('Nuxt CLI — Professional scaffolding for Nuxt 4 projects'))
   .version(pkg.version, '-v, --version')
+
+// ─── init ────────────────────────────────────────────────────────────────────
+program
+  .command('publish:config')
+  .description('Copy nuxt-cli.config.ts to the root of your Nuxt project')
+  .option('-f, --force', 'Overwrite existing config file')
+  .action(async (opts: { force?: boolean }) => {
+    await new InitCommand(container.fileService, container.logger, {
+      ...(opts.force !== undefined && { force: opts.force }),
+      cwd,
+    }).execute()
+  })
 
 // ─── make:layer ──────────────────────────────────────────────────────────────
 program
   .command('make:layer <name>')
-  .description('Create a new Nuxt layer with DDD structure')
-  .option('-f, --force', 'Overwrite existing files')
-  .action(async (name: string, opts: { force?: boolean }) => {
-    const cmd = new MakeLayerCommand(name, container.layerGenerator, container.logger, {
-      ...(opts.force !== undefined && { force: opts.force }),
-      cwd,
-    })
-    await cmd.execute()
-  })
-
-// ─── make:module ─────────────────────────────────────────────────────────────
-program
-  .command('make:module <nameOrLayer> [name]')
   .description(
-    'Create a flat module (make:module <name>) or DDD scaffold within a layer (make:module <layer> <name>)',
+    'Create a new layer or module depending on config.architecture.\n' +
+    '  architecture: "layer"  → layers/<name>/ (DDD structure)\n' +
+    '  architecture: "module" → modules/<name>/ (flat structure)\n' +
+    '  architecture: "auto"   → detects from filesystem (defaults to layer)',
   )
   .option('-f, --force', 'Overwrite existing files')
-  .option('-d, --dir <dir>', 'Modules base directory (default: modules)', 'modules')
-  .action(async (nameOrLayer: string, name: string | undefined, opts: { force?: boolean; dir: string }) => {
-    if (name) {
-      // make:module <layer> <name> → DDD scaffold within a layer
-      const cmd = new MakeModuleCommand(
-        nameOrLayer,
-        name,
-        {
-          model: container.modelGenerator,
-          mapper: container.mapperGenerator,
-          repository: container.repositoryGenerator,
-          service: container.serviceGenerator,
-          store: container.storeGenerator,
-        },
-        container.logger,
-        { ...(opts.force !== undefined && { force: opts.force }) },
-      )
-      await cmd.execute()
-    } else {
-      // make:module <name> → flat module in modules/<name>/
-      await container.flatModuleGenerator.generate(nameOrLayer, {
+  .action(async (name: string, opts: { force?: boolean }) => {
+    const cfg = await container.configService.load(cwd)
+    const arch = cfg.architecture === 'auto' ? 'layer' : cfg.architecture
+
+    if (arch === 'module') {
+      await container.flatModuleGenerator.generate(name, {
         ...(opts.force !== undefined && { force: opts.force }),
-        modulesDir: opts.dir,
+        modulesDir: cfg.modulesDir,
+        moduleDirs: cfg.moduleDirs,
       })
+    } else {
+      const cmd = new MakeLayerCommand(name, container.layerGenerator, container.logger, {
+        ...(opts.force !== undefined && { force: opts.force }),
+        layerDirs: cfg.layerDirs,
+        cwd,
+      })
+      await cmd.execute()
     }
   })
 
@@ -236,7 +234,7 @@ program
 // ─── events:install ──────────────────────────────────────────────────────────
 program
   .command('events:install')
-  .description('Install the Event Bus infrastructure (SimpleEventBus, plugin, composable, contracts)')
+  .description('Install the Event Bus infrastructure (EventBus, plugin, composable, contracts)')
   .option('-f, --force', 'Overwrite existing files')
   .option('--root <path>', 'Events root directory', 'core/events')
   .action(async (opts: { force?: boolean; root: string }) => {
@@ -254,17 +252,18 @@ program
   .option('-f, --force', 'Overwrite existing files')
   .option('-n, --namespace <ns>', 'Event namespace prefix')
   .option('--layer <layer>', 'Layer where the event should be created')
-  .option('--module <module>', 'Flat module where the event should be created')
   .option('--root <path>', 'Events root directory', 'core/events')
-  .action(async (name: string, opts: { force?: boolean; namespace?: string; layer?: string; module?: string; root: string }) => {
-    const target = opts.layer ?? opts.module
-    const targetKind = opts.layer ? 'layer' : opts.module ? 'module' : undefined
+  .action(async (name: string, opts: { force?: boolean; namespace?: string; layer?: string; root: string }) => {
+    const cfg = await container.configService.load(cwd)
+    const targetKind = container.configService.resolveTargetKind(undefined)
     await new EventsMakeCommand(name, container.eventMakeGenerator, container.logger, {
       ...(opts.force !== undefined && { force: opts.force }),
-      namespace: opts.namespace ?? target,
-      target,
+      namespace: opts.namespace ?? opts.layer,
+      target: opts.layer,
       targetKind,
-      eventsRoot: opts.root,
+      eventsRoot: opts.root !== 'core/events' ? opts.root : cfg.events.root,
+      layersDir: cfg.layersDir,
+      modulesDir: cfg.modulesDir,
       cwd,
     }).execute()
   })
@@ -297,25 +296,25 @@ program
 program
   .command('make:event <name>')
   .description(
-    'Create a domain event\n' +
-    '  make:event UserLoggedIn                    → core/events/events/\n' +
-    '  make:event UserLoggedIn --layer auth        → layers/auth/domain/contracts/\n' +
-    '  make:event UserLoggedIn --module ticket     → modules/ticket/events/',
+    'Create a domain event.\n' +
+    '  make:event UserLoggedIn               → core/events/events/ (global)\n' +
+    '  make:event UserLoggedIn --layer auth  → layers/auth/ or modules/auth/ depending on config.architecture',
   )
   .option('-f, --force', 'Overwrite existing files')
   .option('-n, --namespace <ns>', 'Event namespace prefix')
   .option('--layer <layer>', 'Layer where the event should be created')
-  .option('--module <module>', 'Flat module where the event should be created')
   .option('--root <path>', 'Events root directory', 'core/events')
   .action(async (name: string, opts: { force?: boolean; namespace?: string; layer?: string; module?: string; root: string }) => {
-    const target = opts.layer ?? opts.module
-    const targetKind = opts.layer ? 'layer' : opts.module ? 'module' : undefined
+    const cfg = await container.configService.load(cwd)
+    const targetKind = container.configService.resolveTargetKind(undefined)
     await new EventsMakeCommand(name, container.eventMakeGenerator, container.logger, {
       ...(opts.force !== undefined && { force: opts.force }),
-      namespace: opts.namespace ?? target,
-      target,
+      namespace: opts.namespace ?? opts.layer,
+      target: opts.layer,
       targetKind,
-      eventsRoot: opts.root,
+      eventsRoot: opts.root !== 'core/events' ? opts.root : cfg.events.root,
+      layersDir: cfg.layersDir,
+      modulesDir: cfg.modulesDir,
       cwd,
     }).execute()
   })
@@ -336,24 +335,24 @@ program
   .command('make:listener <name>')
   .description(
     'Create an event listener.\n' +
-    '  make:listener WalletRefresh                        → core/events/listeners/\n' +
-    '  make:listener WalletRefresh --layer auth           → layers/auth/application/usecases/\n' +
-    '  make:listener NotifyAdmin   --module payment       → modules/payment/listeners/',
+    '  make:listener WalletRefresh               → core/events/listeners/ (global)\n' +
+    '  make:listener WalletRefresh --layer auth  → layers/auth/ or modules/auth/ depending on config.architecture',
   )
   .option('-f, --force', 'Overwrite existing files')
   .option('-e, --event <event>', 'Event class name this listener handles')
-  .option('--layer <layer>', 'Layer where the listener should be created')
-  .option('--module <module>', 'Flat module where the listener should be created')
+  .option('--layer <layer>', 'Target name (layer or module, defined by config.architecture)')
   .option('--root <path>', 'Events root directory', 'core/events')
-  .action(async (name: string, opts: { force?: boolean; event?: string; layer?: string; module?: string; root: string }) => {
-    const target = opts.layer ?? opts.module
-    const targetKind = opts.layer ? 'layer' : opts.module ? 'module' : undefined
+  .action(async (name: string, opts: { force?: boolean; event?: string; layer?: string; root: string }) => {
+    const cfg = await container.configService.load(cwd)
+    const targetKind = container.configService.resolveTargetKind(undefined)
     await new EventsListenerCommand(name, container.eventListenerGenerator, container.logger, {
       ...(opts.force !== undefined && { force: opts.force }),
       eventName: opts.event,
-      target,
+      target: opts.layer,
       targetKind,
-      eventsRoot: opts.root,
+      eventsRoot: opts.root !== 'core/events' ? opts.root : cfg.events.root,
+      layersDir: cfg.layersDir,
+      modulesDir: cfg.modulesDir,
       cwd,
     }).execute()
   })
@@ -365,17 +364,18 @@ program
   .option('-f, --force', 'Overwrite existing files')
   .option('-e, --event <event>', 'Event class name this listener handles')
   .option('--layer <layer>', 'Layer where the listener should be created')
-  .option('--module <module>', 'Flat module where the listener should be created')
   .option('--root <path>', 'Events root directory', 'core/events')
   .action(async (name: string, opts: { force?: boolean; event?: string; layer?: string; module?: string; root: string }) => {
-    const target = opts.layer ?? opts.module
-    const targetKind = opts.layer ? 'layer' : opts.module ? 'module' : undefined
+    const cfg = await container.configService.load(cwd)
+    const targetKind = container.configService.resolveTargetKind(undefined)
     await new EventsListenerCommand(name, container.eventListenerGenerator, container.logger, {
       ...(opts.force !== undefined && { force: opts.force }),
       eventName: opts.event,
-      target,
+      target: opts.layer,
       targetKind,
-      eventsRoot: opts.root,
+      eventsRoot: opts.root !== 'core/events' ? opts.root : cfg.events.root,
+      layersDir: cfg.layersDir,
+      modulesDir: cfg.modulesDir,
       cwd,
     }).execute()
   })

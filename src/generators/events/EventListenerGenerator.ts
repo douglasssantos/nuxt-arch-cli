@@ -88,38 +88,44 @@ export class EventListenerGenerator {
     const layerPath = path.join(cwd, options.layersDir ?? 'layers', target.kebab)
     const modulePath = path.join(cwd, options.modulesDir ?? 'modules', target.kebab)
 
-    // Explicit kind overrides filesystem detection
+    // Explicit kind (from config or flag) — validate existence first
+    const layerExists = await FileReader.exists(layerPath)
+    const moduleExists = await FileReader.exists(modulePath)
+
     if (options.targetKind === 'layer') {
-      return {
-        kind: 'layer',
-        listenersDir: path.join(layerPath, 'application', 'usecases'),
-        targetLabel: target.kebab,
+      if (!layerExists && moduleExists) {
+        throw new Error(
+          `Target "${target.kebab}" exists as a module (modules/${target.kebab}) but the project is configured to use "layer" architecture.\n` +
+          `Change architecture to "module" in nuxt-cli.config.json, or use a layer name.`,
+        )
       }
+      return { kind: 'layer', listenersDir: path.join(layerPath, 'application', 'usecases'), targetLabel: target.kebab }
     }
 
     if (options.targetKind === 'module') {
-      return {
-        kind: 'module',
-        listenersDir: path.join(modulePath, 'listeners'),
-        targetLabel: target.kebab,
+      if (!moduleExists && layerExists) {
+        throw new Error(
+          `Target "${target.kebab}" exists as a layer (layers/${target.kebab}) but the project is configured to use "module" architecture.\n` +
+          `Change architecture to "layer" in nuxt-cli.config.json, or use a module name.`,
+        )
       }
+      return { kind: 'module', listenersDir: path.join(modulePath, 'listeners'), targetLabel: target.kebab }
     }
 
-    // Auto-detect: check layer first, then module
-    if (await FileReader.exists(layerPath)) {
-      return {
-        kind: 'layer',
-        listenersDir: path.join(layerPath, 'application', 'usecases'),
-        targetLabel: target.kebab,
-      }
+    // Auto-detect: disambiguate or error
+    if (layerExists && !moduleExists) {
+      return { kind: 'layer', listenersDir: path.join(layerPath, 'application', 'usecases'), targetLabel: target.kebab }
     }
 
-    if (await FileReader.exists(modulePath)) {
-      return {
-        kind: 'module',
-        listenersDir: path.join(modulePath, 'listeners'),
-        targetLabel: target.kebab,
-      }
+    if (moduleExists && !layerExists) {
+      return { kind: 'module', listenersDir: path.join(modulePath, 'listeners'), targetLabel: target.kebab }
+    }
+
+    if (layerExists && moduleExists) {
+      throw new Error(
+        `Ambiguous target "${target.kebab}": found both layers/${target.kebab} and modules/${target.kebab}.\n` +
+        `Set "architecture" in nuxt-cli.config.ts to resolve this.`,
+      )
     }
 
     return {

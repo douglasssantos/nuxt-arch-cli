@@ -1,8 +1,8 @@
-import { SimpleEventBus } from '../services/SimpleEventBus'
-import { registerEvents } from '../EventRegistry'
+import { EventBus } from '~/core/events/services/EventBus'
+import { registerEvents } from '~/core/events/EventRegistry'
 
 export default defineNuxtPlugin(() => {
-  const eventBus = new SimpleEventBus()
+  const eventBus = new EventBus()
   registerEvents(eventBus)
 
   return {

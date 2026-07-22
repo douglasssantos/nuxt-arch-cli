@@ -13,6 +13,8 @@ export class EventsListenerCommand implements ICommand {
       eventName?: string
       eventKey?: string
       eventsRoot?: string
+      layersDir?: string
+      modulesDir?: string
       cwd?: string
       target?: string
       targetKind?: 'layer' | 'module'

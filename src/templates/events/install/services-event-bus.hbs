@@ -1,10 +1,10 @@
 import type { IEventBus, EventHandler } from '../contracts/IEventBus'
 
 /**
- * SimpleEventBus — implementação in-memory do barramento de eventos.
+ * EventBus — implementação in-memory do barramento de eventos.
  * Sem dependências externas. Pronto para SSR (Nuxt).
  */
-export class SimpleEventBus implements IEventBus {
+export class EventBus implements IEventBus {
   private readonly handlers = new Map<string, Set<EventHandler>>()
 
   async emit<K extends string>(event: K, payload: unknown): Promise<void> {

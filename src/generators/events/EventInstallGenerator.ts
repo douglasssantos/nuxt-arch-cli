@@ -41,7 +41,7 @@ export class EventInstallGenerator {
     const files: Array<{ dest: string; template: string; vue?: boolean }> = [
       { dest: path.join(root, 'contracts', 'IEventBus.ts'), template: 'events/install/contracts-event-bus' },
       { dest: path.join(root, 'contracts', 'IEventHandler.ts'), template: 'events/install/contracts-event-handler' },
-      { dest: path.join(root, 'services', 'SimpleEventBus.ts'), template: 'events/install/services-simple-event-bus' },
+      { dest: path.join(root, 'services', 'EventBus.ts'), template: 'events/install/services-event-bus' },
       { dest: path.join(root, 'composables', 'useEventBus.ts'), template: 'events/install/composables-use-event-bus' },
       { dest: path.join(root, 'plugins', 'event-bus.ts'), template: 'events/install/plugin' },
       { dest: path.join(root, 'EventMap.ts'), template: 'events/install/event-map' },

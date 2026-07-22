@@ -7,11 +7,12 @@ import { LoggerService } from '../services/LoggerService.js'
 import { NameResolver } from '../utils/NameResolver.js'
 import { PathResolver } from '../utils/PathResolver.js'
 import { FileWriter } from '../utils/FileWriter.js'
-import { LAYER_DIRS } from '../config/index.js'
+import { defaultLayerDirs, type LayerDirsConfig } from '../config/index.js'
 
 export interface LayerGeneratorOptions {
   force?: boolean
   cwd?: string
+  layerDirs?: LayerDirsConfig
 }
 
 export class LayerGenerator {
@@ -28,12 +29,13 @@ export class LayerGenerator {
     const name = NameResolver.resolve(layerName)
     const layerRoot = this.pathResolver.layerRoot(name.kebab)
     const cwd = options.cwd ?? process.cwd()
+    const dirs = options.layerDirs ?? defaultLayerDirs
 
     this.logger.title(`Creating layer: ${name.kebab}`)
 
     // Create all directories
-    const dirs = this.buildDirList(layerRoot)
-    await FileWriter.ensureDirs(dirs)
+    const dirList = this.buildDirList(layerRoot, dirs)
+    await FileWriter.ensureDirs(dirList)
 
     // Generate nuxt.config.ts for the layer
     await this.generateLayerConfig(layerRoot, name.pascal, options.force)
@@ -48,27 +50,27 @@ export class LayerGenerator {
     this.logger.success(`Layer "${name.kebab}" created successfully.`)
   }
 
-  private buildDirList(layerRoot: string): string[] {
+  private buildDirList(layerRoot: string, dirs: LayerDirsConfig): string[] {
     return [
-      path.join(layerRoot, LAYER_DIRS.app.components),
-      path.join(layerRoot, LAYER_DIRS.app.composables),
-      path.join(layerRoot, LAYER_DIRS.app.middleware),
-      path.join(layerRoot, LAYER_DIRS.app.pages),
-      path.join(layerRoot, LAYER_DIRS.app.plugins),
-      path.join(layerRoot, LAYER_DIRS.application.dto),
-      path.join(layerRoot, LAYER_DIRS.application.commands),
-      path.join(layerRoot, LAYER_DIRS.application.queries),
-      path.join(layerRoot, LAYER_DIRS.application.usecases),
-      path.join(layerRoot, LAYER_DIRS.domain.entities),
-      path.join(layerRoot, LAYER_DIRS.domain.repositories),
-      path.join(layerRoot, LAYER_DIRS.domain.services),
-      path.join(layerRoot, LAYER_DIRS.domain.contracts),
-      path.join(layerRoot, LAYER_DIRS.domain.valueObjects),
-      path.join(layerRoot, LAYER_DIRS.infrastructure.api),
-      path.join(layerRoot, LAYER_DIRS.infrastructure.mappers),
-      path.join(layerRoot, LAYER_DIRS.infrastructure.repositories),
-      path.join(layerRoot, LAYER_DIRS.infrastructure.stores),
-      path.join(layerRoot, LAYER_DIRS.tests),
+      path.join(layerRoot, dirs.app.components),
+      path.join(layerRoot, dirs.app.composables),
+      path.join(layerRoot, dirs.app.middleware),
+      path.join(layerRoot, dirs.app.pages),
+      path.join(layerRoot, dirs.app.plugins),
+      path.join(layerRoot, dirs.application.dto),
+      path.join(layerRoot, dirs.application.commands),
+      path.join(layerRoot, dirs.application.queries),
+      path.join(layerRoot, dirs.application.usecases),
+      path.join(layerRoot, dirs.domain.entities),
+      path.join(layerRoot, dirs.domain.repositories),
+      path.join(layerRoot, dirs.domain.services),
+      path.join(layerRoot, dirs.domain.contracts),
+      path.join(layerRoot, dirs.domain.valueObjects),
+      path.join(layerRoot, dirs.infrastructure.api),
+      path.join(layerRoot, dirs.infrastructure.mappers),
+      path.join(layerRoot, dirs.infrastructure.repositories),
+      path.join(layerRoot, dirs.infrastructure.stores),
+      path.join(layerRoot, dirs.tests),
     ]
   }
 

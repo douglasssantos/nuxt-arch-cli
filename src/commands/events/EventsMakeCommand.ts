@@ -8,7 +8,7 @@ export class EventsMakeCommand implements ICommand {
     private readonly name: string,
     private readonly generator: EventMakeGenerator,
     private readonly logger: LoggerService,
-    private readonly options: { force?: boolean; namespace?: string; eventsRoot?: string; cwd?: string; target?: string; targetKind?: 'layer' | 'module' } = {},
+    private readonly options: { force?: boolean; namespace?: string; eventsRoot?: string; layersDir?: string; modulesDir?: string; cwd?: string; target?: string; targetKind?: 'layer' | 'module' } = {},
   ) {}
 
   async execute(): Promise<void> {

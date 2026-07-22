@@ -3,24 +3,35 @@ import { defaultConfig, type CliConfig } from '../config/index.js'
 import path from 'node:path'
 
 export class ConfigService {
-  private config: CliConfig = { ...defaultConfig }
+  private config: CliConfig = { ...defaultConfig, events: { ...defaultConfig.events } }
   private loaded = false
 
   async load(cwd: string = process.cwd()): Promise<CliConfig> {
     if (this.loaded) return this.config
 
-    const configPath = path.join(cwd, 'nuxt-architect.config.ts')
-    const exists = await FileReader.exists(configPath)
+    // Priority: .json (always works) → .js (compiled) → .ts (needs tsx/transform)
+    const candidates = [
+      { filePath: path.join(cwd, 'nuxt-cli.config.json'), type: 'json' as const },
+      { filePath: path.join(cwd, 'nuxt-cli.config.js'), type: 'esm' as const },
+      { filePath: path.join(cwd, 'nuxt-cli.config.ts'), type: 'esm' as const },
+    ]
 
-    if (exists) {
+    for (const candidate of candidates) {
+      if (!(await FileReader.exists(candidate.filePath))) continue
+
       try {
-        // Dynamic import for user config (ESM)
-        const userConfig = (await import(configPath)) as { default?: Partial<CliConfig> }
-        if (userConfig.default) {
-          this.config = { ...defaultConfig, ...userConfig.default }
+        if (candidate.type === 'json') {
+          const raw = await FileReader.read(candidate.filePath)
+          this.config = this.merge(JSON.parse(raw) as Partial<CliConfig>)
+        } else {
+          const mod = (await import(`${candidate.filePath}?t=${Date.now()}`)) as {
+            default?: Partial<CliConfig>
+          }
+          if (mod.default) this.config = this.merge(mod.default)
         }
+        break
       } catch {
-        // Use defaults silently if config cannot be loaded
+        // Try next candidate silently
       }
     }
 
@@ -28,7 +39,36 @@ export class ConfigService {
     return this.config
   }
 
+  private merge(userConfig: Partial<CliConfig>): CliConfig {
+    return {
+      ...defaultConfig,
+      ...userConfig,
+      layerDirs: {
+        ...defaultConfig.layerDirs,
+        ...(userConfig.layerDirs ?? {}),
+        app: { ...defaultConfig.layerDirs.app, ...(userConfig.layerDirs?.app ?? {}) },
+        application: { ...defaultConfig.layerDirs.application, ...(userConfig.layerDirs?.application ?? {}) },
+        domain: { ...defaultConfig.layerDirs.domain, ...(userConfig.layerDirs?.domain ?? {}) },
+        infrastructure: { ...defaultConfig.layerDirs.infrastructure, ...(userConfig.layerDirs?.infrastructure ?? {}) },
+      },
+      moduleDirs: { ...defaultConfig.moduleDirs, ...(userConfig.moduleDirs ?? {}) },
+      events: { ...defaultConfig.events, ...(userConfig.events ?? {}) },
+    }
+  }
+
   get(): CliConfig {
     return this.config
+  }
+
+  /**
+   * Resolves the target kind for commands that support layer/module targeting.
+   * Priority: explicit flag → config.architecture → undefined (auto-detect from filesystem)
+   */
+  resolveTargetKind(
+    explicitKind: 'layer' | 'module' | undefined,
+  ): 'layer' | 'module' | undefined {
+    if (explicitKind) return explicitKind
+    if (this.config.architecture === 'auto') return undefined
+    return this.config.architecture
   }
 }

@@ -8,31 +8,76 @@ export interface EventsConfig {
   namespaceByLayer: boolean
 }
 
+export interface LayerDirsConfig {
+  app: {
+    components: string
+    composables: string
+    middleware: string
+    pages: string
+    plugins: string
+  }
+  application: {
+    dto: string
+    commands: string
+    queries: string
+    usecases: string
+  }
+  domain: {
+    entities: string
+    repositories: string
+    services: string
+    contracts: string
+    valueObjects: string
+  }
+  infrastructure: {
+    api: string
+    mappers: string
+    repositories: string
+    stores: string
+  }
+  tests: string
+}
+
+export interface ModuleDirsConfig {
+  models: string
+  events: string
+  listeners: string
+  mappers: string
+  repositories: string
+  services: string
+  composables: string
+  plugins: string
+  components: string
+  pages: string
+}
+
 export interface CliConfig {
+  /**
+   * Default architecture for scaffolding commands.
+   * - 'layer': DDD layers (layers/<name>/)
+   * - 'module': Flat modules (modules/<name>/)
+   * - 'auto': Detect from filesystem (default)
+   */
+  architecture: 'layer' | 'module' | 'auto'
+
+  /** Directory where layers are stored. Default: 'layers' */
   layersDir: string
+
+  /** Directory where flat modules are stored. Default: 'modules' */
+  modulesDir: string
+
+  /** Internal directory structure for DDD layers. */
+  layerDirs: LayerDirsConfig
+
+  /** Internal directory structure for flat modules. */
+  moduleDirs: ModuleDirsConfig
+
   nuxtConfigFile: string
   nuxtCompatibility: 'v3' | 'v4' | 'auto'
   events: EventsConfig
 }
 
-export const defaultEventsConfig: EventsConfig = {
-  enabled: true,
-  root: 'core/events',
-  autoRegister: true,
-  autoBarrel: true,
-  autoSync: true,
-  generateReadme: false,
-  namespaceByLayer: true,
-}
-
-export const defaultConfig: CliConfig = {
-  layersDir: 'layers',
-  nuxtConfigFile: 'nuxt.config.ts',
-  nuxtCompatibility: 'auto',
-  events: defaultEventsConfig,
-}
-
-export const LAYER_DIRS = {
+export const defaultLayerDirs: LayerDirsConfig = {
   app: {
     components: 'app/components',
     composables: 'app/composables',
@@ -60,4 +105,41 @@ export const LAYER_DIRS = {
     stores: 'infrastructure/stores',
   },
   tests: 'tests',
-} as const
+}
+
+export const defaultModuleDirs: ModuleDirsConfig = {
+  models: 'models',
+  events: 'events',
+  listeners: 'listeners',
+  mappers: 'mappers',
+  repositories: 'repositories',
+  services: 'services',
+  composables: 'composables',
+  plugins: 'plugins',
+  components: 'components',
+  pages: 'pages',
+}
+
+export const defaultEventsConfig: EventsConfig = {
+  enabled: true,
+  root: 'core/events',
+  autoRegister: true,
+  autoBarrel: true,
+  autoSync: true,
+  generateReadme: false,
+  namespaceByLayer: true,
+}
+
+export const defaultConfig: CliConfig = {
+  architecture: 'auto',
+  layersDir: 'layers',
+  modulesDir: 'modules',
+  layerDirs: defaultLayerDirs,
+  moduleDirs: defaultModuleDirs,
+  nuxtConfigFile: 'nuxt.config.ts',
+  nuxtCompatibility: 'auto',
+  events: defaultEventsConfig,
+}
+
+/** @deprecated Use defaultConfig.layerDirs instead */
+export const LAYER_DIRS = defaultLayerDirs

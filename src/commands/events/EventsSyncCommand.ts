@@ -6,7 +6,7 @@ export class EventsSyncCommand implements ICommand {
   constructor(
     private readonly generator: EventSyncGenerator,
     private readonly logger: LoggerService,
-    private readonly options: { eventsRoot?: string; cwd?: string } = {},
+    private readonly options: { eventsRoot?: string; layersDir?: string; modulesDir?: string; cwd?: string } = {},
   ) {}
 
   async execute(): Promise<void> {

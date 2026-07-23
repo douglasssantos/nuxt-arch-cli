@@ -26,6 +26,26 @@ const container = new Container(cwd)
 // Load user config eagerly so actions can use it synchronously via container.configService.get()
 container.configService.load(cwd).catch(() => {/* use defaults */})
 
+/**
+ * Resolves the events root path based on option priority:
+ * 1. --root <path>   → use exactly as provided (manual override)
+ * 2. --layer <name>  → resolve inside the layer/module (respects config.architecture)
+ * 3. (none)          → cfg.events.root from global config
+ */
+function resolveEventsRoot(
+  opts: { root?: string; layer?: string },
+  cfg: import('./config/index.js').CliConfig,
+  projectCwd: string,
+): string {
+  if (opts.root) return opts.root
+  if (opts.layer) {
+    const arch = cfg.architecture === 'auto' ? 'layer' : cfg.architecture
+    const baseDir = arch === 'module' ? cfg.modulesDir : cfg.layersDir
+    return path.join(projectCwd, baseDir, opts.layer, 'events')
+  }
+  return cfg.events.root
+}
+
 export const program = new Command()
   .name('nuxi arch')
   .description(chalk.cyan('Nuxt CLI — Professional scaffolding for Nuxt 4 projects'))
@@ -250,11 +270,14 @@ program
   .command('events:install')
   .description('Install the Event Bus infrastructure (EventBus, plugin, composable, contracts)')
   .option('-f, --force', 'Overwrite existing files')
-  .option('--root <path>', 'Events root directory', 'core/events')
-  .action(async (opts: { force?: boolean; root: string }) => {
+  .option('--layer <layer>', 'Install inside a specific layer/module (resolved by config.architecture)')
+  .option('--root <path>', 'Manual events root path (overrides --layer and global config)')
+  .action(async (opts: { force?: boolean; layer?: string; root?: string }) => {
+    const cfg = await container.configService.load(cwd)
+    const eventsRoot = resolveEventsRoot(opts, cfg, cwd)
     await new EventsInstallCommand(container.eventInstallGenerator, container.logger, {
       ...(opts.force !== undefined && { force: opts.force }),
-      eventsRoot: opts.root,
+      eventsRoot,
       cwd,
     }).execute()
   })
@@ -275,7 +298,7 @@ program
       namespace: opts.namespace ?? opts.layer,
       target: opts.layer,
       targetKind,
-      eventsRoot: opts.root !== 'core/events' ? opts.root : cfg.events.root,
+      eventsRoot: resolveEventsRoot(opts, cfg, cwd),
       layersDir: cfg.layersDir,
       modulesDir: cfg.modulesDir,
       cwd,
@@ -327,7 +350,7 @@ program
       namespace: opts.namespace ?? opts.layer,
       target: opts.layer,
       targetKind,
-      eventsRoot: opts.root !== 'core/events' ? opts.root : cfg.events.root,
+      eventsRoot: resolveEventsRoot(opts, cfg, cwd),
       layersDir: cfg.layersDir,
       modulesDir: cfg.modulesDir,
       cwd,
@@ -365,7 +388,7 @@ program
       eventName: opts.event,
       target: opts.layer,
       targetKind,
-      eventsRoot: opts.root !== 'core/events' ? opts.root : cfg.events.root,
+      eventsRoot: resolveEventsRoot(opts, cfg, cwd),
       layersDir: cfg.layersDir,
       modulesDir: cfg.modulesDir,
       cwd,
@@ -388,7 +411,7 @@ program
       eventName: opts.event,
       target: opts.layer,
       targetKind,
-      eventsRoot: opts.root !== 'core/events' ? opts.root : cfg.events.root,
+      eventsRoot: resolveEventsRoot(opts, cfg, cwd),
       layersDir: cfg.layersDir,
       modulesDir: cfg.modulesDir,
       cwd,
@@ -399,10 +422,14 @@ program
 program
   .command('events:sync')
   .description('Rebuild EventMap, EventRegistry and Barrel Files')
-  .option('--root <path>', 'Events root directory', 'core/events')
-  .action(async (opts: { root: string }) => {
+  .option('--layer <layer>', 'Scope to a specific layer/module (resolved by config.architecture)')
+  .option('--root <path>', 'Manual events root path (overrides --layer and global config)')
+  .action(async (opts: { layer?: string; root?: string }) => {
+    const cfg = await container.configService.load(cwd)
     await new EventsSyncCommand(container.eventSyncGenerator, container.logger, {
-      eventsRoot: opts.root,
+      eventsRoot: resolveEventsRoot(opts, cfg, cwd),
+      layersDir: cfg.layersDir,
+      modulesDir: cfg.modulesDir,
       cwd,
     }).execute()
   })
@@ -411,10 +438,14 @@ program
 program
   .command('events:register')
   .description('Alias for events:sync — rebuilds EventRegistry')
-  .option('--root <path>', 'Events root directory', 'core/events')
-  .action(async (opts: { root: string }) => {
+  .option('--layer <layer>', 'Scope to a specific layer/module (resolved by config.architecture)')
+  .option('--root <path>', 'Manual events root path (overrides --layer and global config)')
+  .action(async (opts: { layer?: string; root?: string }) => {
+    const cfg = await container.configService.load(cwd)
     await new EventsSyncCommand(container.eventSyncGenerator, container.logger, {
-      eventsRoot: opts.root,
+      eventsRoot: resolveEventsRoot(opts, cfg, cwd),
+      layersDir: cfg.layersDir,
+      modulesDir: cfg.modulesDir,
       cwd,
     }).execute()
   })
@@ -423,10 +454,14 @@ program
 program
   .command('events:list')
   .description('List all registered events and their listeners')
-  .option('--root <path>', 'Events root directory', 'core/events')
-  .action(async (opts: { root: string }) => {
+  .option('--layer <layer>', 'Scope to a specific layer/module (resolved by config.architecture)')
+  .option('--root <path>', 'Manual events root path (overrides --layer and global config)')
+  .action(async (opts: { layer?: string; root?: string }) => {
+    const cfg = await container.configService.load(cwd)
     await new EventsListCommand(container.eventsService, container.logger, {
-      eventsRoot: opts.root,
+      eventsRoot: resolveEventsRoot(opts, cfg, cwd),
+      layersDir: cfg.layersDir,
+      modulesDir: cfg.modulesDir,
       cwd,
     }).execute()
   })
@@ -435,10 +470,14 @@ program
 program
   .command('events:inspect <event>')
   .description('Inspect a specific event (payload, listeners)')
-  .option('--root <path>', 'Events root directory', 'core/events')
-  .action(async (event: string, opts: { root: string }) => {
+  .option('--layer <layer>', 'Scope to a specific layer/module (resolved by config.architecture)')
+  .option('--root <path>', 'Manual events root path (overrides --layer and global config)')
+  .action(async (event: string, opts: { layer?: string; root?: string }) => {
+    const cfg = await container.configService.load(cwd)
     await new EventsInspectCommand(event, container.eventsService, container.logger, {
-      eventsRoot: opts.root,
+      eventsRoot: resolveEventsRoot(opts, cfg, cwd),
+      layersDir: cfg.layersDir,
+      modulesDir: cfg.modulesDir,
       cwd,
     }).execute()
   })
@@ -447,10 +486,14 @@ program
 program
   .command('events:doctor')
   .description('Validate event consistency (orphans, duplicates, broken imports)')
-  .option('--root <path>', 'Events root directory', 'core/events')
-  .action(async (opts: { root: string }) => {
+  .option('--layer <layer>', 'Scope to a specific layer/module (resolved by config.architecture)')
+  .option('--root <path>', 'Manual events root path (overrides --layer and global config)')
+  .action(async (opts: { layer?: string; root?: string }) => {
+    const cfg = await container.configService.load(cwd)
     await new EventsDoctorCommand(container.eventsService, container.logger, {
-      eventsRoot: opts.root,
+      eventsRoot: resolveEventsRoot(opts, cfg, cwd),
+      layersDir: cfg.layersDir,
+      modulesDir: cfg.modulesDir,
       cwd,
     }).execute()
   })

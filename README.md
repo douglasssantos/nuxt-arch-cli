@@ -187,6 +187,29 @@ export default {
 | `npx nuxti events:doctor` | Validate consistency (orphans, duplicates) |
 | `npx nuxti events:remove <name>` | Remove an event with confirmation |
 
+#### `--layer`, `--root` and global config priority
+
+All `events:*` commands resolve the events root path with the following priority:
+
+| Option | Behavior |
+|---|---|
+| `--layer <name>` | Resolves inside the layer/module (respects `config.architecture`) |
+| `--root <path>` | Uses the provided path directly (manual override) |
+| *(none)* | Uses `events.root` from global config (default: `core/events`) |
+
+```bash
+# Uses global config → core/events (or cfg.events.root)
+npx nuxti events:sync
+
+# Scoped to the auth layer/module (architecture-aware)
+npx nuxti events:sync --layer auth
+
+# Explicit manual path
+npx nuxti events:sync --root src/shared/events
+```
+
+> `--root` always takes precedence over `--layer`.
+
 ---
 
 ## Architecture modes

@@ -4,11 +4,11 @@
   "description": "Professional CLI + Nuxt Module for Nuxt 4 projects with DDD, Clean Architecture, Nuxt Layers and Pinia ORM",
   "type": "module",
   "bin": {
-    "nxti": "./dist/cli.js",
-    "nuxti": "./dist/cli.js",
-    "nuxt-arch": "./dist/cli.js",
-    "nuxt-arch-cli": "./dist/cli.js",
-    "nuxi-arch": "./dist/cli.js"
+    "nxti": "./dist/index.js",
+    "nuxti": "./dist/index.js",
+    "nuxt-arch": "./dist/index.js",
+    "nuxt-arch-cli": "./dist/index.js",
+    "nuxi-arch": "./dist/index.js"
   },
   "main": "./dist/module.js",
   "module": "./dist/module.js",
@@ -31,7 +31,7 @@
     "test:watch": "vitest",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "arch": "nuxt-arch",
+    "arch": "node ./dist/index.js",
     "nxti": "nuxt-arch",
     "nuxti": "nuxt-arch",
     "nuxt-arch": "nuxt-arch",

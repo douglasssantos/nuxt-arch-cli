@@ -81,6 +81,7 @@ npx nuxi-arch --help
 
 # OR 
 
+npm run arch --help
 npm run nxti --help
 npm run nuxti --help
 npm run nuxt-arch --help

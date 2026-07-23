@@ -1,6 +1,18 @@
 import { FileReader } from '../utils/FileReader.js'
 import { defaultConfig, type CliConfig } from '../config/index.js'
 import path from 'node:path'
+import { execSync } from 'node:child_process'
+import { createRequire } from 'node:module'
+
+// Resolve tsx from the CLI's own node_modules
+const _require = createRequire(import.meta.url)
+function findTsx(): string | null {
+  try {
+    return _require.resolve('tsx/esm')
+  } catch {
+    return null
+  }
+}
 
 export class ConfigService {
   private config: CliConfig = { ...defaultConfig, events: { ...defaultConfig.events } }
@@ -9,11 +21,14 @@ export class ConfigService {
   async load(cwd: string = process.cwd()): Promise<CliConfig> {
     if (this.loaded) return this.config
 
-    // Priority: .json (always works) → .js (compiled) → .ts (needs tsx/transform)
+    // Priority: .json (native) → .js (ESM import) → .ts (via tsx from CLI)
     const candidates = [
       { filePath: path.join(cwd, 'nuxt-cli.config.json'), type: 'json' as const },
+      { filePath: path.join(cwd, 'nuxt-architect.config.json'), type: 'json' as const },
       { filePath: path.join(cwd, 'nuxt-cli.config.js'), type: 'esm' as const },
-      { filePath: path.join(cwd, 'nuxt-cli.config.ts'), type: 'esm' as const },
+      { filePath: path.join(cwd, 'nuxt-architect.config.js'), type: 'esm' as const },
+      { filePath: path.join(cwd, 'nuxt-cli.config.ts'), type: 'ts' as const },
+      { filePath: path.join(cwd, 'nuxt-architect.config.ts'), type: 'ts' as const },
     ]
 
     for (const candidate of candidates) {
@@ -23,13 +38,32 @@ export class ConfigService {
         if (candidate.type === 'json') {
           const raw = await FileReader.read(candidate.filePath)
           this.config = this.merge(JSON.parse(raw) as Partial<CliConfig>)
-        } else {
+          break
+        }
+
+        if (candidate.type === 'esm') {
           const mod = (await import(`${candidate.filePath}?t=${Date.now()}`)) as {
             default?: Partial<CliConfig>
           }
-          if (mod.default) this.config = this.merge(mod.default)
+          if (mod.default) {
+            this.config = this.merge(mod.default)
+            break
+          }
         }
-        break
+
+        if (candidate.type === 'ts') {
+          const tsxEsm = findTsx()
+          if (!tsxEsm) continue
+
+          // Run tsx from CLI's own node_modules to evaluate the .ts config
+          const json = execSync(
+            `node --import "${tsxEsm}" -e "import cfg from '${candidate.filePath.replace(/\\/g, '/')}'; process.stdout.write(JSON.stringify(cfg.default ?? cfg))"`,
+            { encoding: 'utf-8', timeout: 5000 },
+          )
+          const userConfig = JSON.parse(json) as Partial<CliConfig>
+          this.config = this.merge(userConfig)
+          break
+        }
       } catch {
         // Try next candidate silently
       }

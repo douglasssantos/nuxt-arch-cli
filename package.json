@@ -1,6 +1,6 @@
 {
   "name": "nuxt-arch-cli",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Professional CLI + Nuxt Module for Nuxt 4 projects with DDD, Clean Architecture, Nuxt Layers and Pinia ORM",
   "type": "module",
   "bin": {

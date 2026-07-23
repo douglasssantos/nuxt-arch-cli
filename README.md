@@ -55,10 +55,37 @@ bus.off('user:logged-in', handler)
 
 ## CLI Usage
 
+---
+
+## Available Aliases
+
+After installing, the following command aliases are available:
+
+| Alias | Usage |
+|---|---|
+| `nxti` | `npx nxti make:layer auth` |
+| `nuxti` | `npx nuxti make:layer auth` |
+| `nuxt-arch` | `npx nuxt-arch make:layer auth` |
+| `nuxt-arch-cli` | `npx nuxt-arch-cli make:layer auth` |
+| `nuxi-arch` | `npx nuxi-arch make:layer auth` *(integrates with `nuxi arch`)* |
+
+All aliases point to the same CLI. Choose whichever fits your workflow.
+
+```bash
+# All equivalent:
+npx nxti --help
+npx nuxti --help
+npx nuxt-arch --help
+npx nuxt-arch-cli --help
+npx nuxi-arch --help
+```
+
+---
+
 ### Publish Config
 
 ```bash
-npx arch publish:config
+npx nuxti publish:config
 ```
 
 Creates `nuxt-architect.config.ts` at the root of your project.
@@ -73,9 +100,9 @@ export default {
   modulesDir: 'modules',
 
   layerDirs: {
-    npx arch: { 
-        components: 'npx arch/components', 
-        pages: 'npx arch/pages', 
+    app: { 
+        components: 'app/components', 
+        pages: 'app/pages', 
         ... 
     },
     domain: { 
@@ -83,9 +110,9 @@ export default {
         contracts: 'domain/contracts', 
         ... 
     },
-    npx archlication: { 
-        usecases: 'npx archlication/usecases', 
-        dto: 'npx archlication/dto', 
+    application: { 
+        usecases: 'application/usecases', 
+        dto: 'application/dto', 
         ... 
     },
     infrastructure: { 
@@ -121,34 +148,34 @@ export default {
 
 | Command | Description |
 |---|---|
-| `npx arch make:layer <name>` | Create layer or module (depends on `architecture` config) |
-| `npx arch make:model <name> --layer <layer>` | Pinia ORM model (entity) |
-| `npx arch make:mnpx archer <name> --layer <layer>` | Data mnpx archer (`toModel` + `toApi`) |
-| `npx arch make:repository <name> --layer <layer>` | Repository interface + implementation |
-| `npx arch make:service <name> --layer <layer>` | HTTP API service with error handling |
-| `npx arch make:store <name> --layer <layer>` | Pinia store |
-| `npx arch make:usecase <name> --layer <layer>` | Use case |
-| `npx arch make:dto <name> --layer <layer>` | Data Transfer Object |
-| `npx arch make:component <name> --layer <layer>` | Vue component |
-| `npx arch make:page <name> --layer <layer>` | Nuxt page |
-| `npx arch make:composable <name> --layer <layer>` | Vue composable |
-| `npx arch make:plugin <name> --layer <layer>` | Nuxt plugin |
-| `npx arch make:middleware <name> --layer <layer>` | Nuxt route middleware |
-| `npx arch make:enum <name> --layer <layer>` | TypeScript enum |
-| `npx arch make:interface <name> --layer <layer>` | TypeScript interface |
+| `npx nuxti make:layer <name>` | Create layer or module (depends on `architecture` config) |
+| `npx nuxti make:model <name> --layer <layer>` | Pinia ORM model (entity) |
+| `npx nuxti make:mapper <name> --layer <layer>` | Data mapper (`toModel` + `toApi`) |
+| `npx nuxti make:repository <name> --layer <layer>` | Repository interface + implementation |
+| `npx nuxti make:service <name> --layer <layer>` | HTTP API service with error handling |
+| `npx nuxti make:store <name> --layer <layer>` | Pinia store |
+| `npx nuxti make:usecase <name> --layer <layer>` | Use case |
+| `npx nuxti make:dto <name> --layer <layer>` | Data Transfer Object |
+| `npx nuxti make:component <name> --layer <layer>` | Vue component |
+| `npx nuxti make:page <name> --layer <layer>` | Nuxt page |
+| `npx nuxti make:composable <name> --layer <layer>` | Vue composable |
+| `npx nuxti make:plugin <name> --layer <layer>` | Nuxt plugin |
+| `npx nuxti make:middleware <name> --layer <layer>` | Nuxt route middleware |
+| `npx nuxti make:enum <name> --layer <layer>` | TypeScript enum |
+| `npx nuxti make:interface <name> --layer <layer>` | TypeScript interface |
 
 ### Event Bus
 
 | Command | Description |
 |---|---|
-| `npx arch events:install` | Install Event Bus infrastructure (`core/events/`) |
-| `npx arch make:event <name> [--layer <target>]` | Create a domain event |
-| `npx arch make:listener <name> [--layer <target>]` | Create an event listener |
-| `npx arch events:sync` | Rebuild `EventMap` + `EventRegistry` + Barrel Files |
-| `npx arch events:list` | List all registered events and listeners |
-| `npx arch events:inspect <event>` | Inspect event payload and listeners |
-| `npx arch events:doctor` | Validate consistency (orphans, duplicates) |
-| `npx arch events:remove <name>` | Remove an event with confirmation |
+| `npx nuxti events:install` | Install Event Bus infrastructure (`core/events/`) |
+| `npx nuxti make:event <name> [--layer <target>]` | Create a domain event |
+| `npx nuxti make:listener <name> [--layer <target>]` | Create an event listener |
+| `npx nuxti events:sync` | Rebuild `EventMap` + `EventRegistry` + Barrel Files |
+| `npx nuxti events:list` | List all registered events and listeners |
+| `npx nuxti events:inspect <event>` | Inspect event payload and listeners |
+| `npx nuxti events:doctor` | Validate consistency (orphans, duplicates) |
+| `npx nuxti events:remove <name>` | Remove an event with confirmation |
 
 ---
 
@@ -157,15 +184,15 @@ export default {
 ### `architecture: "layer"` — DDD with Nuxt Layers
 
 ```bash
-npx arch make:layer auth
+npx nuxti make:layer auth
 ```
 
 ```
 layers/auth/
-├── npx arch/           (components, pages, plugins, middleware, composables)
-├── npx archlication/   (usecases, dto, commands, queries)
+├── app/           (components, pages, plugins, middleware, composables)
+├── application/   (usecases, dto, commands, queries)
 ├── domain/        (entities, repositories, services, contracts, value-objects)
-├── infrastructure/(api, mnpx archers, repositories, stores)
+├── infrastructure/(api, mappers, repositories, stores)
 ├── tests/
 └── nuxt.config.ts
 ```
@@ -173,7 +200,7 @@ layers/auth/
 ### `architecture: "module"` — Flat modules
 
 ```bash
-npx arch make:layer ticket
+npx nuxti make:layer ticket
 ```
 
 ```
@@ -181,7 +208,7 @@ modules/ticket/
 ├── models/
 ├── events/
 ├── listeners/
-├── mnpx archers/
+├── mappers/
 ├── repositories/
 ├── services/
 ├── composables/
@@ -197,22 +224,22 @@ modules/ticket/
 
 ```bash
 # 1. Install infrastructure
-npx arch events:install
+npx nuxti events:install
 
 # 2. Create events co-located with the module
-npx arch make:event UserLoggedIn --layer auth
-npx arch make:event TicketCreated --layer ticket
+npx nuxti make:event UserLoggedIn --layer auth
+npx nuxti make:event TicketCreated --layer ticket
 
 # 3. Create listeners
-npx arch make:listener SyncWallet --layer auth --event UserLoggedIn
-npx arch make:listener NotifyAdmin --layer ticket --event TicketCreated
+npx nuxti make:listener SyncWallet --layer auth --event UserLoggedIn
+npx nuxti make:listener NotifyAdmin --layer ticket --event TicketCreated
 
 # 4. Sync EventMap + EventRegistry
-npx arch events:sync
+npx nuxti events:sync
 
 # 5. Inspect
-npx arch events:list
-npx arch events:inspect user-logged-in
+npx nuxti events:list
+npx nuxti events:inspect user-logged-in
 ```
 
 ---
@@ -241,8 +268,8 @@ For projects that prefer JSON over TypeScript config:
 All `make:*` commands respect existing files. Use `--force` to overwrite:
 
 ```bash
-npx arch make:layer auth --force
-npx arch make:event UserLoggedIn --layer auth --force
+npx nuxti make:layer auth --force
+npx nuxti make:event UserLoggedIn --layer auth --force
 ```
 
 ---

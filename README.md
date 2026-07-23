@@ -58,7 +58,7 @@ bus.off('user:logged-in', handler)
 ### Publish Config
 
 ```bash
-app publish:config
+npx arch publish:config
 ```
 
 Creates `nuxt-architect.config.ts` at the root of your project.
@@ -73,9 +73,9 @@ export default {
   modulesDir: 'modules',
 
   layerDirs: {
-    app: { 
-        components: 'app/components', 
-        pages: 'app/pages', 
+    npx arch: { 
+        components: 'npx arch/components', 
+        pages: 'npx arch/pages', 
         ... 
     },
     domain: { 
@@ -83,9 +83,9 @@ export default {
         contracts: 'domain/contracts', 
         ... 
     },
-    application: { 
-        usecases: 'application/usecases', 
-        dto: 'application/dto', 
+    npx archlication: { 
+        usecases: 'npx archlication/usecases', 
+        dto: 'npx archlication/dto', 
         ... 
     },
     infrastructure: { 
@@ -121,34 +121,34 @@ export default {
 
 | Command | Description |
 |---|---|
-| `app make:layer <name>` | Create layer or module (depends on `architecture` config) |
-| `app make:model <name> --layer <layer>` | Pinia ORM model (entity) |
-| `app make:mapper <name> --layer <layer>` | Data mapper (`toModel` + `toApi`) |
-| `app make:repository <name> --layer <layer>` | Repository interface + implementation |
-| `app make:service <name> --layer <layer>` | HTTP API service with error handling |
-| `app make:store <name> --layer <layer>` | Pinia store |
-| `app make:usecase <name> --layer <layer>` | Use case |
-| `app make:dto <name> --layer <layer>` | Data Transfer Object |
-| `app make:component <name> --layer <layer>` | Vue component |
-| `app make:page <name> --layer <layer>` | Nuxt page |
-| `app make:composable <name> --layer <layer>` | Vue composable |
-| `app make:plugin <name> --layer <layer>` | Nuxt plugin |
-| `app make:middleware <name> --layer <layer>` | Nuxt route middleware |
-| `app make:enum <name> --layer <layer>` | TypeScript enum |
-| `app make:interface <name> --layer <layer>` | TypeScript interface |
+| `npx arch make:layer <name>` | Create layer or module (depends on `architecture` config) |
+| `npx arch make:model <name> --layer <layer>` | Pinia ORM model (entity) |
+| `npx arch make:mnpx archer <name> --layer <layer>` | Data mnpx archer (`toModel` + `toApi`) |
+| `npx arch make:repository <name> --layer <layer>` | Repository interface + implementation |
+| `npx arch make:service <name> --layer <layer>` | HTTP API service with error handling |
+| `npx arch make:store <name> --layer <layer>` | Pinia store |
+| `npx arch make:usecase <name> --layer <layer>` | Use case |
+| `npx arch make:dto <name> --layer <layer>` | Data Transfer Object |
+| `npx arch make:component <name> --layer <layer>` | Vue component |
+| `npx arch make:page <name> --layer <layer>` | Nuxt page |
+| `npx arch make:composable <name> --layer <layer>` | Vue composable |
+| `npx arch make:plugin <name> --layer <layer>` | Nuxt plugin |
+| `npx arch make:middleware <name> --layer <layer>` | Nuxt route middleware |
+| `npx arch make:enum <name> --layer <layer>` | TypeScript enum |
+| `npx arch make:interface <name> --layer <layer>` | TypeScript interface |
 
 ### Event Bus
 
 | Command | Description |
 |---|---|
-| `app events:install` | Install Event Bus infrastructure (`core/events/`) |
-| `app make:event <name> [--layer <target>]` | Create a domain event |
-| `app make:listener <name> [--layer <target>]` | Create an event listener |
-| `app events:sync` | Rebuild `EventMap` + `EventRegistry` + Barrel Files |
-| `app events:list` | List all registered events and listeners |
-| `app events:inspect <event>` | Inspect event payload and listeners |
-| `app events:doctor` | Validate consistency (orphans, duplicates) |
-| `app events:remove <name>` | Remove an event with confirmation |
+| `npx arch events:install` | Install Event Bus infrastructure (`core/events/`) |
+| `npx arch make:event <name> [--layer <target>]` | Create a domain event |
+| `npx arch make:listener <name> [--layer <target>]` | Create an event listener |
+| `npx arch events:sync` | Rebuild `EventMap` + `EventRegistry` + Barrel Files |
+| `npx arch events:list` | List all registered events and listeners |
+| `npx arch events:inspect <event>` | Inspect event payload and listeners |
+| `npx arch events:doctor` | Validate consistency (orphans, duplicates) |
+| `npx arch events:remove <name>` | Remove an event with confirmation |
 
 ---
 
@@ -157,15 +157,15 @@ export default {
 ### `architecture: "layer"` — DDD with Nuxt Layers
 
 ```bash
-app make:layer auth
+npx arch make:layer auth
 ```
 
 ```
 layers/auth/
-├── app/           (components, pages, plugins, middleware, composables)
-├── application/   (usecases, dto, commands, queries)
+├── npx arch/           (components, pages, plugins, middleware, composables)
+├── npx archlication/   (usecases, dto, commands, queries)
 ├── domain/        (entities, repositories, services, contracts, value-objects)
-├── infrastructure/(api, mappers, repositories, stores)
+├── infrastructure/(api, mnpx archers, repositories, stores)
 ├── tests/
 └── nuxt.config.ts
 ```
@@ -173,7 +173,7 @@ layers/auth/
 ### `architecture: "module"` — Flat modules
 
 ```bash
-app make:layer ticket
+npx arch make:layer ticket
 ```
 
 ```
@@ -181,7 +181,7 @@ modules/ticket/
 ├── models/
 ├── events/
 ├── listeners/
-├── mappers/
+├── mnpx archers/
 ├── repositories/
 ├── services/
 ├── composables/
@@ -197,22 +197,22 @@ modules/ticket/
 
 ```bash
 # 1. Install infrastructure
-app events:install
+npx arch events:install
 
 # 2. Create events co-located with the module
-app make:event UserLoggedIn --layer auth
-app make:event TicketCreated --layer ticket
+npx arch make:event UserLoggedIn --layer auth
+npx arch make:event TicketCreated --layer ticket
 
 # 3. Create listeners
-app make:listener SyncWallet --layer auth --event UserLoggedIn
-app make:listener NotifyAdmin --layer ticket --event TicketCreated
+npx arch make:listener SyncWallet --layer auth --event UserLoggedIn
+npx arch make:listener NotifyAdmin --layer ticket --event TicketCreated
 
 # 4. Sync EventMap + EventRegistry
-app events:sync
+npx arch events:sync
 
 # 5. Inspect
-app events:list
-app events:inspect user-logged-in
+npx arch events:list
+npx arch events:inspect user-logged-in
 ```
 
 ---
@@ -241,8 +241,8 @@ For projects that prefer JSON over TypeScript config:
 All `make:*` commands respect existing files. Use `--force` to overwrite:
 
 ```bash
-app make:layer auth --force
-app make:event UserLoggedIn --layer auth --force
+npx arch make:layer auth --force
+npx arch make:event UserLoggedIn --layer auth --force
 ```
 
 ---

@@ -4,6 +4,7 @@
   "description": "Professional CLI + Nuxt Module for Nuxt 4 projects with DDD, Clean Architecture, Nuxt Layers and Pinia ORM",
   "type": "module",
   "bin": {
+    "arch": "./dist/cli.js",
     "app": "./dist/cli.js",
     "nuxt-arch-cli": "./dist/cli.js",
     "nuxi-arch": "./dist/cli.js"

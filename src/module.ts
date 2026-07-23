@@ -51,14 +51,14 @@ export default defineNuxtModule<ModuleOptions>({
         logger.info('nuxt-arch-cli ready. Available commands:\n')
         const c = (s: string) => `\x1b[36m${s}\x1b[0m`
         const lines = [
-          [c('nuxi arch init'),                               'Create nuxt-architect.config.ts'],
-          [c('nuxi arch make:layer <name>'),                  'Create layer or module'],
-          [c('nuxi arch make:event <name> --layer <target>'), 'Create a domain event'],
-          [c('nuxi arch make:listener <name> --layer <t>'),   'Create a listener'],
-          [c('nuxi arch events:install'),                     'Setup Event Bus infrastructure'],
-          [c('nuxi arch events:list'),                        'List all events and listeners'],
-          [c('nuxi arch events:sync'),                        'Rebuild EventMap + Registry'],
-          [c('nuxi arch --help'),                             'Full command reference'],
+          [c('arch init'),                               'Create nuxt-architect.config.ts'],
+          [c('arch make:layer <name>'),                  'Create layer or module'],
+          [c('arch make:event <name> --layer <target>'), 'Create a domain event'],
+          [c('arch make:listener <name> --layer <t>'),   'Create a listener'],
+          [c('arch events:install'),                     'Setup Event Bus infrastructure'],
+          [c('arch events:list'),                        'List all events and listeners'],
+          [c('arch events:sync'),                        'Rebuild EventMap + Registry'],
+          [c('arch --help'),                             'Full command reference'],
         ]
         for (const [cmd, desc] of lines) {
           console.log(`  ${cmd.padEnd(60)}${desc}`)

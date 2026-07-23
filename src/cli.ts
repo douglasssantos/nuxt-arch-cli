@@ -27,7 +27,7 @@ const container = new Container(cwd)
 container.configService.load(cwd).catch(() => {/* use defaults */})
 
 export const program = new Command()
-  .name('app')
+  .name('nuxi arch')
   .description(chalk.cyan('Nuxt CLI — Professional scaffolding for Nuxt 4 projects'))
   .version(pkg.version, '-v, --version')
 
@@ -75,154 +75,168 @@ program
 
 // ─── make:model ──────────────────────────────────────────────────────────────
 program
-  .command('make:model <layer> <name>')
+  .command('make:model <name>')
   .description('Create a Pinia ORM model (entity)')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.modelGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.modelGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:mapper ─────────────────────────────────────────────────────────────
 program
-  .command('make:mapper <layer> <name>')
+  .command('make:mapper <name>')
   .description('Create a data mapper')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.mapperGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.mapperGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:repository ─────────────────────────────────────────────────────────
 program
-  .command('make:repository <layer> <name>')
+  .command('make:repository <name>')
   .description('Create a repository interface + implementation')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.repositoryGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.repositoryGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:service ────────────────────────────────────────────────────────────
 program
-  .command('make:service <layer> <name>')
+  .command('make:service <name>')
   .description('Create an HTTP API service')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.serviceGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.serviceGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:store ──────────────────────────────────────────────────────────────
 program
-  .command('make:store <layer> <name>')
+  .command('make:store <name>')
   .description('Create a Pinia store')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.storeGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.storeGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:usecase ────────────────────────────────────────────────────────────
 program
-  .command('make:usecase <layer> <name>')
+  .command('make:usecase <name>')
   .description('Create a use case')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.useCaseGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.useCaseGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:dto ────────────────────────────────────────────────────────────────
 program
-  .command('make:dto <layer> <name>')
+  .command('make:dto <name>')
   .description('Create a Data Transfer Object')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.dtoGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.dtoGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:component ──────────────────────────────────────────────────────────
 program
-  .command('make:component <layer> <name>')
+  .command('make:component <name>')
   .description('Create a Vue component')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.componentGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.componentGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:page ───────────────────────────────────────────────────────────────
 program
-  .command('make:page <layer> <name>')
+  .command('make:page <name>')
   .description('Create a Nuxt page')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.pageGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.pageGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:composable ─────────────────────────────────────────────────────────
 program
-  .command('make:composable <layer> <name>')
+  .command('make:composable <name>')
   .description('Create a Vue composable')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.composableGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.composableGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:plugin ─────────────────────────────────────────────────────────────
 program
-  .command('make:plugin <layer> <name>')
+  .command('make:plugin <name>')
   .description('Create a Nuxt plugin')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.pluginGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.pluginGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:middleware ──────────────────────────────────────────────────────────
 program
-  .command('make:middleware <layer> <name>')
+  .command('make:middleware <name>')
   .description('Create a Nuxt route middleware')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.middlewareGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.middlewareGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:enum ───────────────────────────────────────────────────────────────
 program
-  .command('make:enum <layer> <name>')
+  .command('make:enum <name>')
   .description('Create a TypeScript enum')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.enumGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.enumGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:interface ──────────────────────────────────────────────────────────
 program
-  .command('make:interface <layer> <name>')
+  .command('make:interface <name>')
   .description('Create a TypeScript interface')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.interfaceGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.interfaceGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
@@ -268,25 +282,26 @@ program
     }).execute()
   })
 
-
 // ─── make:bus:event ──────────────────────────────────────────────────────────────
 program
-  .command('make:bus:event <layer> <name>')
+  .command('make:bus:event <name>')
   .description('Create a domain event by bus')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.eventGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.eventGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })
 
 // ─── make:bus:listener ───────────────────────────────────────────────────────────
 program
-  .command('make:bus:listener <layer> <name>')
+  .command('make:bus:listener <name>')
   .description('Create an event listener by bus')
   .option('-f, --force', 'Overwrite existing files')
-  .action(async (layer: string, name: string, opts: { force?: boolean }) => {
-    await new MakeArtifactCommand(layer, name, container.listenerGenerator, container.logger, {
+  .option('--layer <layer>', 'Target layer or module')
+  .action(async (name: string, opts: { force?: boolean; layer?: string }) => {
+    await new MakeArtifactCommand(opts.layer ?? '', name, container.listenerGenerator, container.logger, {
       force: opts.force,
     }).execute()
   })

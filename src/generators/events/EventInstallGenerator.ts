@@ -4,11 +4,18 @@ import { TemplateService } from '../../services/TemplateService.js'
 import { FormatterService } from '../../services/FormatterService.js'
 import { LoggerService } from '../../services/LoggerService.js'
 import { FileWriter } from '../../utils/FileWriter.js'
+import { PathResolver } from '../../utils/PathResolver.js'
 
 export interface EventsInstallOptions {
   force?: boolean
   cwd?: string
   eventsRoot?: string
+  /**
+   * Absolute path to the layer root (e.g. /project/layers/core).
+   * When provided the Nuxt plugin is placed at {layerRoot}/{app/}plugins/ instead
+   * of inside the eventsRoot, so Nuxt auto-discovers it.
+   */
+  layerRoot?: string
 }
 
 export class EventInstallGenerator {
@@ -17,15 +24,45 @@ export class EventInstallGenerator {
     private readonly templateService: TemplateService,
     private readonly formatterService: FormatterService,
     private readonly logger: LoggerService,
+    private readonly pathResolver: PathResolver,
   ) {}
 
   async generate(options: EventsInstallOptions = {}): Promise<void> {
     const cwd = options.cwd ?? process.cwd()
-    const root = path.join(cwd, options.eventsRoot ?? 'core/events')
+    const eventsRootRel = options.eventsRoot ?? 'core/events'
+    const root = path.join(cwd, eventsRootRel)
 
     this.logger.title('Installing Event Bus infrastructure')
 
-    // Create all directories
+    // ── Plugin placement ────────────────────────────────────────────────────
+    // When inside a layer: place plugin in {layerRoot}/[app/]plugins/ so Nuxt
+    // auto-discovers it (respects v4 app/ prefix via pathResolver).
+    // When global: keep plugin inside eventsRoot/plugins/ and ask user to
+    // register it manually in nuxt.config.ts.
+    const isLayerInstall = Boolean(options.layerRoot)
+    const pluginDest = isLayerInstall
+      ? path.join(options.layerRoot!, this.pathResolver.appDir('plugins'), 'event-bus.ts')
+      : path.join(root, 'plugins', 'event-bus.ts')
+
+    // ── Import alias for the plugin template ────────────────────────────────
+    // v4: ~/  → app/  (srcDir), so paths outside app/ need @/ (rootDir alias)
+    // v3: ~/  → rootDir, so ~/eventsRoot/... works directly
+    // Layer install: use relative paths from the plugin file to eventsRoot
+    let eventsImportBase: string
+    if (isLayerInstall) {
+      // Relative from {layerRoot}/[app/]plugins/ → {layerRoot}/events/
+      // v4: app/plugins/ → ../../events  (up: plugins, app)
+      // v3: plugins/     → ../events     (up: plugins)
+      const levelsUp = this.pathResolver.version === 'v4' ? '../..' : '..'
+      eventsImportBase = `${levelsUp}/events`
+    } else {
+      // Global install: use Nuxt alias pointing to rootDir
+      // v4: @/ → rootDir  |  v3: ~/ → rootDir (same in v3)
+      const alias = this.pathResolver.version === 'v4' ? '@' : '~'
+      eventsImportBase = `${alias}/${eventsRootRel}`
+    }
+
+    // Create all infrastructure directories (always inside eventsRoot)
     await FileWriter.ensureDirs([
       path.join(root, 'contracts'),
       path.join(root, 'services'),
@@ -34,11 +71,12 @@ export class EventInstallGenerator {
       path.join(root, 'events'),
       path.join(root, 'listeners'),
       path.join(root, 'registry'),
+      ...(isLayerInstall ? [path.dirname(pluginDest)] : []),
     ])
 
-    const ctx = { pascalName: '', camelName: '', kebabName: '', snakeName: '', upperName: '' }
+    const ctx = { pascalName: '', camelName: '', kebabName: '', snakeName: '', upperName: '', eventsImportBase }
 
-    const files: Array<{ dest: string; template: string; vue?: boolean }> = [
+    const infraFiles: Array<{ dest: string; template: string }> = [
       { dest: path.join(root, 'contracts', 'IEventBus.ts'), template: 'events/install/contracts-event-bus' },
       { dest: path.join(root, 'contracts', 'IEventHandler.ts'), template: 'events/install/contracts-event-handler' },
       { dest: path.join(root, 'services', 'EventBus.ts'), template: 'events/install/services-event-bus' },
@@ -49,7 +87,13 @@ export class EventInstallGenerator {
       { dest: path.join(root, 'index.ts'), template: 'events/install/index' },
     ]
 
-    for (const f of files) {
+    // Plugin goes to the nuxt-aware location; the one inside eventsRoot/plugins/
+    // acts as a plain TS file (not a Nuxt plugin) when a layer root is specified.
+    const allFiles = isLayerInstall
+      ? [...infraFiles, { dest: pluginDest, template: 'events/install/plugin' }]
+      : infraFiles
+
+    for (const f of allFiles) {
       const raw = await this.templateService.render(f.template, ctx)
       const formatted = await this.formatterService.formatTypeScript(raw)
       await this.fileService.safeWrite(f.dest, formatted, {
@@ -60,7 +104,14 @@ export class EventInstallGenerator {
     }
 
     this.logger.newLine()
-    this.logger.success(`Event Bus installed at ${options.eventsRoot ?? 'core/events'}/`)
-    this.logger.info('Add the plugin to nuxt.config.ts → plugins: ["./core/events/plugins/event-bus"]')
+    this.logger.success(`Event Bus installed at ${eventsRootRel}/`)
+
+    if (isLayerInstall) {
+      this.logger.info(`Nuxt plugin placed at: ${path.relative(cwd, pluginDest)}`)
+      this.logger.info('The plugin is auto-discovered by Nuxt from the layer — no manual registration needed.')
+    } else {
+      this.logger.info(`Add the plugin to nuxt.config.ts → plugins: ["./${eventsRootRel}/plugins/event-bus"]`)
+    }
   }
 }
+

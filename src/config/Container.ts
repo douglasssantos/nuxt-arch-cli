@@ -133,6 +133,7 @@ export class Container {
       this.templateService,
       this.formatterService,
       this.logger,
+      this.pathResolver,
     )
     this.eventMakeGenerator = new EventMakeGenerator(
       this.fileService,

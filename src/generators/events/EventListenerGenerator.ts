@@ -92,10 +92,13 @@ export class EventListenerGenerator {
     const layerExists = await FileReader.exists(layerPath)
     const moduleExists = await FileReader.exists(modulePath)
 
+    const layersDir = options.layersDir ?? 'layers'
+    const modulesDir = options.modulesDir ?? 'modules'
+
     if (options.targetKind === 'layer') {
       if (!layerExists && moduleExists) {
         throw new Error(
-          `Target "${target.kebab}" exists as a module (modules/${target.kebab}) but the project is configured to use "layer" architecture.\n` +
+          `Target "${target.kebab}" exists as a module (${modulesDir}/${target.kebab}) but the project is configured to use "layer" architecture.\n` +
           `Change architecture to "module" in nuxt-cli.config.json, or use a layer name.`,
         )
       }
@@ -105,7 +108,7 @@ export class EventListenerGenerator {
     if (options.targetKind === 'module') {
       if (!moduleExists && layerExists) {
         throw new Error(
-          `Target "${target.kebab}" exists as a layer (layers/${target.kebab}) but the project is configured to use "module" architecture.\n` +
+          `Target "${target.kebab}" exists as a layer (${layersDir}/${target.kebab}) but the project is configured to use "module" architecture.\n` +
           `Change architecture to "layer" in nuxt-cli.config.json, or use a module name.`,
         )
       }
@@ -123,7 +126,7 @@ export class EventListenerGenerator {
 
     if (layerExists && moduleExists) {
       throw new Error(
-        `Ambiguous target "${target.kebab}": found both layers/${target.kebab} and modules/${target.kebab}.\n` +
+        `Ambiguous target "${target.kebab}": found both ${layersDir}/${target.kebab} and ${modulesDir}/${target.kebab}.\n` +
         `Set "architecture" in nuxt-cli.config.ts to resolve this.`,
       )
     }

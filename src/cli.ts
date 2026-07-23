@@ -51,6 +51,22 @@ export const program = new Command()
   .description(chalk.cyan('Nuxt CLI — Professional scaffolding for Nuxt 4 projects'))
   .version(pkg.version, '-v, --version')
 
+// Resolve Nuxt version and config dirs before every command and inject into PathResolver
+program.hook('preAction', async () => {
+  const cfg = await container.configService.load(cwd)
+
+  let version: 'v3' | 'v4'
+  if (cfg.nuxtCompatibility === 'auto') {
+    version = await container.nuxtConfigService.detectNuxtVersion(cwd)
+  } else {
+    version = cfg.nuxtCompatibility
+  }
+
+  container.pathResolver.setNuxtVersion(version)
+  container.pathResolver.setLayersDir(cfg.layersDir)
+  container.pathResolver.setModulesDir(cfg.modulesDir)
+})
+
 // ─── init ────────────────────────────────────────────────────────────────────
 program
   .command('publish:config')
@@ -275,9 +291,17 @@ program
   .action(async (opts: { force?: boolean; layer?: string; root?: string }) => {
     const cfg = await container.configService.load(cwd)
     const eventsRoot = resolveEventsRoot(opts, cfg, cwd)
+
+    // Resolve the layer root so EventInstallGenerator can place the Nuxt plugin
+    // in the correct nuxt-version-aware location ({layer}/[app/]plugins/).
+    const layerRoot = opts.layer
+      ? path.join(cwd, cfg.architecture === 'module' ? cfg.modulesDir : cfg.layersDir, opts.layer)
+      : undefined
+
     await new EventsInstallCommand(container.eventInstallGenerator, container.logger, {
       ...(opts.force !== undefined && { force: opts.force }),
       eventsRoot,
+      layerRoot,
       cwd,
     }).execute()
   })

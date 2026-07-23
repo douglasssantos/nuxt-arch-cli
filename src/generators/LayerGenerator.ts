@@ -52,11 +52,11 @@ export class LayerGenerator {
 
   private buildDirList(layerRoot: string, dirs: LayerDirsConfig): string[] {
     return [
-      path.join(layerRoot, dirs.app.components),
-      path.join(layerRoot, dirs.app.composables),
-      path.join(layerRoot, dirs.app.middleware),
-      path.join(layerRoot, dirs.app.pages),
-      path.join(layerRoot, dirs.app.plugins),
+      path.join(layerRoot, this.pathResolver.resolveAppPath(dirs.app.components)),
+      path.join(layerRoot, this.pathResolver.resolveAppPath(dirs.app.composables)),
+      path.join(layerRoot, this.pathResolver.resolveAppPath(dirs.app.middleware)),
+      path.join(layerRoot, this.pathResolver.resolveAppPath(dirs.app.pages)),
+      path.join(layerRoot, this.pathResolver.resolveAppPath(dirs.app.plugins)),
       path.join(layerRoot, dirs.application.dto),
       path.join(layerRoot, dirs.application.commands),
       path.join(layerRoot, dirs.application.queries),
@@ -119,7 +119,7 @@ export class LayerGenerator {
 
   private async updateRootConfig(_cwd: string, layerName: string): Promise<void> {
     const nuxtConfigPath = this.pathResolver.nuxtConfig()
-    const layerPath = `./layers/${layerName}`
+    const layerPath = `./${this.pathResolver.layers}/${layerName}`
 
     try {
       const added = await this.nuxtConfigService.addLayer(nuxtConfigPath, layerPath)

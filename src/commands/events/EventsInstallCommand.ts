@@ -6,7 +6,7 @@ export class EventsInstallCommand implements ICommand {
   constructor(
     private readonly generator: EventInstallGenerator,
     private readonly logger: LoggerService,
-    private readonly options: { force?: boolean; eventsRoot?: string; cwd?: string } = {},
+    private readonly options: { force?: boolean; eventsRoot?: string; cwd?: string; layerRoot?: string } = {},
   ) {}
 
   async execute(): Promise<void> {

@@ -30,7 +30,9 @@ export class EventInstallGenerator {
   async generate(options: EventsInstallOptions = {}): Promise<void> {
     const cwd = options.cwd ?? process.cwd()
     const eventsRootRel = options.eventsRoot ?? 'core/events'
-    const root = path.join(cwd, eventsRootRel)
+    const nuxtPathVersion = this.pathResolver.version === 'v4' ? 'app/' : '';
+    const root = path.join(cwd, `${nuxtPathVersion}${eventsRootRel}`);
+    // const root = path.join(cwd, eventsRootRel)
 
     this.logger.title('Installing Event Bus infrastructure')
 
